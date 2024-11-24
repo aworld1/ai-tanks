@@ -1,9 +1,12 @@
 // Player.cs (Modified)
 using UnityEngine;
 using System;
+using Unity.MLAgents;
+using Unity.MLAgents.Sensors;
+using Unity.MLAgents.Actuators;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public abstract class Player : MonoBehaviour
+public abstract class Player : Agent
 {
     // Movement Parameters
     [Header("Movement Settings")]
@@ -15,12 +18,6 @@ public abstract class Player : MonoBehaviour
     public int maxHealth = 100;
     [HideInInspector]
     public int currentHealth;
-
-    // Input Keys
-    [Header("Control Settings")]
-    public KeyCode turnLeftKey = KeyCode.A;
-    public KeyCode turnRightKey = KeyCode.D;
-    public KeyCode moveForwardKey = KeyCode.W;
 
     // Team Settings
     [Header("Team Settings")]
@@ -34,6 +31,12 @@ public abstract class Player : MonoBehaviour
     public float bulletSpeed = 10f; // Default bullet speed
     public int bulletDamage = 20; // Default bullet damage
 
+    // Ray Perception Settings
+    [Header("Ray Perception Settings")]
+    public float rayDistance = 20f;
+    public float rayAngle = 90f;
+    public int rayCount = 8;
+
     private float shootTimer = 0f;
 
     // Events
@@ -44,7 +47,7 @@ public abstract class Player : MonoBehaviour
     protected Rigidbody2D rb;
 
     // Initialization
-    protected virtual void Start()
+    public override void Initialize()
     {
         rb = GetComponent<Rigidbody2D>();
         currentHealth = maxHealth;
@@ -70,18 +73,97 @@ public abstract class Player : MonoBehaviour
         }
     }
 
-    // Physics-based Movement
-    protected virtual void FixedUpdate()
+    public override void OnEpisodeBegin()
     {
-        HandleMovement();
+        currentHealth = maxHealth;
+        shootTimer = 0f;
+    }
 
-        // Handle shooting timer
+    public override void CollectObservations(VectorSensor sensor)
+    {
+        // Base observations
+        sensor.AddObservation(transform.position); // 2 values (x,y)
+        sensor.AddObservation(transform.rotation.eulerAngles.z); // 1 value
+        sensor.AddObservation(currentHealth / (float)maxHealth); // 1 value
+        sensor.AddObservation(shootTimer <= 0f ? 1.0f : 0.0f); // 1 value
+        
+        // Ray-based observations
+        float startAngle = -rayAngle / 2f;
+        float angleIncrement = rayAngle / (rayCount - 1);
+        int enemyLayerMask = playerTeam == Team.Red ? 
+            LayerMask.GetMask("BlueTeam") : 
+            LayerMask.GetMask("RedTeam");
+
+        for (int i = 0; i < rayCount; i++)
+        {
+            float currentAngle = startAngle + (angleIncrement * i);
+            Vector2 direction = Quaternion.Euler(0, 0, currentAngle) * transform.up;
+            
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, rayDistance, enemyLayerMask);
+            
+            // Draw debug rays - Green for no hit, Red for hit
+            Color rayColor = hit.collider != null ? Color.red : Color.green;
+            Debug.DrawRay(transform.position, direction * rayDistance, rayColor);
+            
+            // Add normalized distance (1.0 if no hit, less than 1.0 if hit something)
+            float normalizedDistance = hit.collider != null ? hit.distance / rayDistance : 1.0f;
+            sensor.AddObservation(normalizedDistance);
+            
+            // If we hit an enemy, add their health and direction
+            if (hit.collider != null)
+            {
+                Player enemyPlayer = hit.collider.GetComponent<Player>();
+                if (enemyPlayer != null)
+                {
+                    sensor.AddObservation(enemyPlayer.currentHealth / (float)enemyPlayer.maxHealth);
+                    // Add normalized direction to enemy
+                    Vector2 directionToEnemy = (hit.collider.transform.position - transform.position).normalized;
+                    sensor.AddObservation(directionToEnemy);
+                }
+                else
+                {
+                    // No enemy component found
+                    sensor.AddObservation(0f); // health
+                    sensor.AddObservation(Vector2.zero); // direction
+                }
+            }
+            else
+            {
+                // No hit
+                sensor.AddObservation(0f); // health
+                sensor.AddObservation(Vector2.zero); // direction
+            }
+        }
+    }
+
+    public override void OnActionReceived(ActionBuffers actions)
+    {
+        // Get continuous actions
+        float moveInput = actions.ContinuousActions[0];
+        float turnInput = actions.ContinuousActions[1];
+        
+        // Handle movement
+        float rotationAmount = -turnInput * rotationSpeed * Time.fixedDeltaTime;
+        rb.MoveRotation(rb.rotation + rotationAmount);
+
+        Vector2 direction = transform.up;
+        Vector2 newPosition = rb.position + direction * moveInput * moveSpeed * Time.fixedDeltaTime;
+        rb.MovePosition(newPosition);
+
+        // Handle shooting (discrete action)
+        if (actions.DiscreteActions[0] == 1 && shootTimer <= 0f)
+        {
+            FireBullet();
+        }
+
+        // Update shooting timer
         if (shootTimer > 0f)
         {
             shootTimer -= Time.fixedDeltaTime;
         }
 
-        HandleShooting();
+        // Add small negative reward for each step to encourage efficient behavior
+        AddReward(-0.001f);
     }
 
     public void AssignRedTeam()
@@ -128,29 +210,6 @@ public abstract class Player : MonoBehaviour
         }
     }
 
-    // Handle Player Movement
-    protected virtual void HandleMovement()
-    {
-        float turnInput = 0f;
-        if (Input.GetKey(turnLeftKey))
-            turnInput = -1f; // Turn left
-        if (Input.GetKey(turnRightKey))
-            turnInput = 1f; // Turn right
-
-        float moveInput = 0f;
-        if (Input.GetKey(moveForwardKey))
-            moveInput = 1f; // Move forward
-
-        // Rotate the player
-        float rotationAmount = -turnInput * rotationSpeed * Time.fixedDeltaTime;
-        rb.MoveRotation(rb.rotation + rotationAmount);
-
-        // Move the player forward
-        Vector2 direction = transform.up; // Assuming the 'up' direction is the forward direction
-        Vector2 newPosition = rb.position + direction * moveInput * moveSpeed * Time.fixedDeltaTime;
-        rb.MovePosition(newPosition);
-    }
-
     // Method to Inflict Damage
     public void TakeDamage(int damage)
     {
@@ -161,12 +220,13 @@ public abstract class Player : MonoBehaviour
         }
 
         currentHealth -= damage;
-        currentHealth = Mathf.Max(currentHealth, 0); // Clamp to 0
+        currentHealth = Mathf.Max(currentHealth, 0);
 
-        // Trigger the health changed event
+        // Add negative reward for taking damage
+        AddReward(-0.1f);
+
         OnHealthChanged?.Invoke();
 
-        // Check for death
         if (currentHealth <= 0)
         {
             Die();
@@ -183,21 +243,24 @@ public abstract class Player : MonoBehaviour
         }
 
         currentHealth += amount;
-        currentHealth = Mathf.Min(currentHealth, maxHealth); // Clamp to maxHealth
+        currentHealth = Mathf.Min(currentHealth, maxHealth);
 
-        // Trigger the health changed event
+        // Add positive reward for healing
+        AddReward(0.05f);
+
         OnHealthChanged?.Invoke();
     }
 
     // Handle Player Death
     protected virtual void Die()
     {
-
-        // Trigger the death event
+        // Add large negative reward for dying
+        AddReward(-1.0f);
+        
         OnDeath?.Invoke();
-
-        // Optional: Play death animation, disable controls, etc.
-        // For now, simply destroy the player object
+        EndEpisode();
+        
+        // Optional: Instead of destroying, could reset position and health
         Destroy(gameObject);
     }
 
@@ -212,10 +275,8 @@ public abstract class Player : MonoBehaviour
 
         if (shootTimer <= 0f)
         {
-            // Instantiate the bullet at the shooting point's position and rotation
             GameObject bullet = Instantiate(bulletPrefab, shootingPoint.position, shootingPoint.rotation);
 
-            // Set the bullet's team to match the player's team
             Bullet bulletScript = bullet.GetComponent<Bullet>();
             if (bulletScript != null)
             {
@@ -224,19 +285,27 @@ public abstract class Player : MonoBehaviour
                 bulletScript.speed = this.bulletSpeed;
             }
 
-            // color the bullet based on the player's team
             SpriteRenderer bulletRenderer = bullet.GetComponent<SpriteRenderer>();
             if (bulletRenderer != null)
             {
                 bulletRenderer.color = playerTeam == Team.Red ? Color.red : Color.blue;
             }
 
-            // Reset the shoot timer
             shootTimer = shootCooldown;
         }
     }
 
+    // Method to handle successful hit on enemy
+    public void OnBulletHitEnemy()
+    {
+        // Add positive reward for successful hit
+        AddReward(0.2f);
+    }
 
-    // Abstract method to handle shooting input; to be implemented in derived classes
-    protected abstract void HandleShooting();
+    // Method to handle enemy elimination
+    public void OnEnemyEliminated()
+    {
+        // Add large positive reward for eliminating an enemy
+        AddReward(1.0f);
+    }
 }
