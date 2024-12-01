@@ -1,10 +1,14 @@
 // GameManager.cs
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro; // Import TextMeshPro namespace
 
 public class GameManager : MonoBehaviour
 {
+    public GameObject redPlayerPrefab; // Declare red team player prefab
+    public GameObject bluePlayerPrefab;
     public GameObject[] redTeamStartingPlayers; // Assign existing red team players in inspector
     public GameObject[] blueTeamStartingPlayers; // Assign existing blue team players in inspector
 
@@ -23,7 +27,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         ResetPlayers();
-
+        //SpawnPlayers();
         // Initially hide the win text
         if (winText != null)
         {
@@ -59,7 +63,7 @@ public class GameManager : MonoBehaviour
                 
                 // Reset position and rotation
                 player.transform.position = spawnPoint.position;
-                player.transform.rotation = Quaternion.identity;
+                player.transform.rotation = Quaternion.Euler(0, 0, -90f);
 
                 // Reset player properties
                 Player playerScript = player.GetComponent<Player>();
@@ -83,7 +87,7 @@ public class GameManager : MonoBehaviour
 
                 // Reset position and rotation
                 player.transform.position = spawnPoint.position;
-                player.transform.rotation = Quaternion.identity;
+                player.transform.rotation = Quaternion.Euler(0, 0, 90f);
 
                 // Reset player properties
                 Player playerScript = player.GetComponent<Player>();
@@ -96,6 +100,35 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
+    // void SpawnPlayers()
+    // {
+    //     // Spawn red team players
+    //     foreach (Transform spawnPoint in spawnPoints)
+    //     {
+    //         GameObject player = Instantiate(redPlayerPrefab, spawnPoint.position, Quaternion.Euler(0, 0, -90f));
+    //         Player playerScript = player.GetComponent<Player>();
+    //         if (playerScript != null)
+    //         {
+    //             playerScript.Initialize();
+    //             playerScript.AssignRedTeam();
+    //             redTeamPlayers.Add(player);
+    //         }
+    //     }
+
+    //     // // Spawn blue team players
+    //     // foreach (Transform spawnPoint in blueTeamSpawnPoints)
+    //     // {
+    //     //     GameObject player = Instantiate(bluePlayerPrefab, spawnPoint.position, Quaternion.Euler(0, 0, 90f));
+    //     //     Player playerScript = player.GetComponent<Player>();
+    //     //     if (playerScript != null)
+    //     //     {
+    //     //         playerScript.Initialize();
+    //     //         playerScript.AssignBlueTeam();
+    //     //         blueTeamPlayers.Add(player);
+    //     //     }
+    //     // }
+    // }
 
     void CheckWinCondition()
     {
@@ -136,15 +169,32 @@ public class GameManager : MonoBehaviour
             {
                 winText.text = $"{winningTeam} Team Won!";
             }
+            // Reward players on the winning team
+            List<GameObject> winningTeamPlayers = winningTeam == "Red" ? redTeamPlayers : blueTeamPlayers;
+            foreach (GameObject player in winningTeamPlayers)
+            {
+                Player playerScript = player.GetComponent<Player>();
+                if (playerScript != null)
+                {
+                    playerScript.AddReward(10f);
+                }
+            }
         }
         else
         {
             Debug.LogWarning("GameManager: WinText is not assigned in the Inspector.");
         }
 
-        // Stop the game by pausing time
-        Time.timeScale = 0f;
+        // Start coroutine to restart the game after 1 second
+        StartCoroutine(RestartGameAfterDelay(0f));
+    }
 
-        // Optionally, disable player inputs or other game functionalities here
+    IEnumerator RestartGameAfterDelay(float delay)
+    {
+        // Wait for the specified delay in real time
+        yield return new WaitForSecondsRealtime(delay);
+
+        // Reload the current scene
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

@@ -4,10 +4,27 @@ using System;
 using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
+using System.IO;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public abstract class Player : Agent
 {
+    private string logFilePath;
+
+    private void Start()
+    {
+        logFilePath = Path.Combine(Application.persistentDataPath, "agent_log.txt");
+        damageZone = FindFirstObjectByType<DamageZone>();
+    }
+
+    private void LogToFile(string message)
+    {
+        using (StreamWriter writer = new StreamWriter(logFilePath, true))
+        {
+            writer.WriteLine(message);
+        }
+    }
+
     // Movement Parameters
     [Header("Movement Settings")]
     public float moveSpeed = 4f;
@@ -18,6 +35,9 @@ public abstract class Player : Agent
     public int maxHealth = 100;
     [HideInInspector]
     public int currentHealth;
+
+    [HideInInspector]
+    public DamageZone damageZone;
 
     // Team Settings
     [Header("Team Settings")]
@@ -58,7 +78,7 @@ public abstract class Player : Agent
             gameObject.layer = LayerMask.NameToLayer("RedTeam");
         }
         else if (playerTeam == Team.Blue)
-        {
+        {   
             gameObject.layer = LayerMask.NameToLayer("BlueTeam");
         }
 
@@ -81,25 +101,29 @@ public abstract class Player : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
+        LogToFile($"CollectObservations called on {gameObject.name}");
         // Base observations
         sensor.AddObservation(transform.position); // 2 values (x,y)
         sensor.AddObservation(transform.rotation.eulerAngles.z); // 1 value
         sensor.AddObservation(currentHealth / (float)maxHealth); // 1 value
         sensor.AddObservation(shootTimer <= 0f ? 1.0f : 0.0f); // 1 value
-        
+        sensor.AddObservation(damageZone.currentRadius);
+
         // Ray-based observations
         float startAngle = -rayAngle / 2f;
         float angleIncrement = rayAngle / (rayCount - 1);
         int enemyLayerMask = playerTeam == Team.Red ? 
             LayerMask.GetMask("BlueTeam") : 
             LayerMask.GetMask("RedTeam");
+        int wallLayerMask = LayerMask.GetMask("Walls");
+        int combinedMask = enemyLayerMask | wallLayerMask;
 
         for (int i = 0; i < rayCount; i++)
         {
             float currentAngle = startAngle + (angleIncrement * i);
             Vector2 direction = Quaternion.Euler(0, 0, currentAngle) * transform.up;
             
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, rayDistance, enemyLayerMask);
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, rayDistance, combinedMask);
             
             // Draw debug rays - Green for no hit, Red for hit
             Color rayColor = hit.collider != null ? Color.red : Color.green;
@@ -112,19 +136,33 @@ public abstract class Player : Agent
             // If we hit an enemy, add their health and direction
             if (hit.collider != null)
             {
-                Player enemyPlayer = hit.collider.GetComponent<Player>();
-                if (enemyPlayer != null)
+                LogToFile($"{gameObject.name} sees {hit.collider.gameObject.layer}");
+                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Walls"))
                 {
-                    sensor.AddObservation(enemyPlayer.currentHealth / (float)enemyPlayer.maxHealth);
-                    // Add normalized direction to enemy
-                    Vector2 directionToEnemy = (hit.collider.transform.position - transform.position).normalized;
-                    sensor.AddObservation(directionToEnemy);
+                    LogToFile($"{gameObject.name} sees a wall at distance {hit.distance}");
+                    Vector2 directionToWall = (hit.collider.transform.position - transform.position).normalized;
+                    sensor.AddObservation(directionToWall);
+                    sensor.AddObservation(1.0f); // wall
                 }
                 else
                 {
-                    // No enemy component found
-                    sensor.AddObservation(0f); // health
-                    sensor.AddObservation(Vector2.zero); // direction
+                    Player enemyPlayer = hit.collider.GetComponent<Player>();
+                    if (enemyPlayer != null)
+                    {
+                        //sensor.AddObservation(enemyPlayer.currentHealth / (float)enemyPlayer.maxHealth);
+                        // Add normalized direction to enemy
+                        Vector2 directionToEnemy = (hit.collider.transform.position - transform.position).normalized;
+                        sensor.AddObservation(directionToEnemy);
+                        LogToFile($"{gameObject.name} sees an enemy at distance {hit.distance}");
+                        sensor.AddObservation(-1.0f); // enemy
+                    }
+                    else
+                    {
+                        LogToFile($"{gameObject.name} sees a non-player object at distance {hit.distance}");
+                        // No enemy component found
+                        sensor.AddObservation(Vector2.zero); // direction
+                        sensor.AddObservation(0f); // not an enemy
+                    }
                 }
             }
             else
@@ -139,7 +177,7 @@ public abstract class Player : Agent
     public override void OnActionReceived(ActionBuffers actions)
     {
         // Get continuous actions
-        float moveInput = actions.ContinuousActions[0];
+        float moveInput = Mathf.Exp(actions.ContinuousActions[0]);
         float turnInput = actions.ContinuousActions[1];
         
         // Handle movement
@@ -154,6 +192,7 @@ public abstract class Player : Agent
         if (actions.DiscreteActions[0] == 1 && shootTimer <= 0f)
         {
             FireBullet();
+            // AddReward(-0.01f); // Small negative reward for shooting
         }
 
         // Update shooting timer
@@ -161,9 +200,6 @@ public abstract class Player : Agent
         {
             shootTimer -= Time.fixedDeltaTime;
         }
-
-        // Add small negative reward for each step to encourage efficient behavior
-        AddReward(-0.001f);
     }
 
     public void AssignRedTeam()
@@ -211,7 +247,7 @@ public abstract class Player : Agent
     }
 
     // Method to Inflict Damage
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, Player shooter = null)
     {
         if (damage < 0)
         {
@@ -223,12 +259,16 @@ public abstract class Player : Agent
         currentHealth = Mathf.Max(currentHealth, 0);
 
         // Add negative reward for taking damage
-        AddReward(-0.1f);
+        AddReward(-0.2f);
 
         OnHealthChanged?.Invoke();
 
         if (currentHealth <= 0)
         {
+            if (shooter != null)
+            {
+                shooter.OnEnemyEliminated();
+            }
             Die();
         }
     }
@@ -283,6 +323,7 @@ public abstract class Player : Agent
                 bulletScript.bulletTeam = this.playerTeam;
                 bulletScript.damage = this.bulletDamage;
                 bulletScript.speed = this.bulletSpeed;
+                bulletScript.shooter = this;
             }
 
             SpriteRenderer bulletRenderer = bullet.GetComponent<SpriteRenderer>();
@@ -299,7 +340,7 @@ public abstract class Player : Agent
     public void OnBulletHitEnemy()
     {
         // Add positive reward for successful hit
-        AddReward(0.2f);
+        AddReward(0.5f);
     }
 
     // Method to handle enemy elimination

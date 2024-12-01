@@ -11,6 +11,8 @@ public class Bullet : MonoBehaviour
     public float speed = 10f; // Set based on shooter
 
     private Rigidbody2D rb;
+    [HideInInspector]
+    public Player shooter;
 
     void Start()
     {
@@ -32,11 +34,18 @@ public class Bullet : MonoBehaviour
             if (hitPlayer != null && hitPlayer.playerTeam != bulletTeam)
             {
                 // Apply damage to the opposing player
-                hitPlayer.TakeDamage(damage);
+                hitPlayer.TakeDamage(damage, shooter);
+
+                shooter.OnBulletHitEnemy();
 
                 // Destroy the bullet after hitting
                 Destroy(gameObject);
             }
+        }
+        if (collision.CompareTag("Wall"))
+        {
+            // Destroy the bullet after hitting a wall
+            Destroy(gameObject);
         }
     }
 }

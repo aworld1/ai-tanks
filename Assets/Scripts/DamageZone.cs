@@ -21,7 +21,7 @@ public class DamageZone : MonoBehaviour
     public Transform arenaCenter; // Reference to the center of the arena
 
     private CircleCollider2D circleCollider;
-    private float currentRadius;
+    public float currentRadius;
     private float elapsedTime = 0f;
     private float currentDamagePerSecond;
 
