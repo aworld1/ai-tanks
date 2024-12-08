@@ -1,6 +1,10 @@
 // GameManager.cs
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Unity.MLAgents;
+using Unity.MLAgents.Actuators;
+using Unity.MLAgents.Sensors;
+using Unity.MLAgents.Policies;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro; // Import TextMeshPro namespace
@@ -21,11 +25,30 @@ public class GameManager : MonoBehaviour
     private List<GameObject> redTeamPlayers = new List<GameObject>();
     private List<GameObject> blueTeamPlayers = new List<GameObject>();
 
+    private SimpleMultiAgentGroup redTeamGroup = new SimpleMultiAgentGroup();
+    private SimpleMultiAgentGroup blueTeamGroup = new SimpleMultiAgentGroup();
+
     // Flag to determine if the game has ended
     private bool gameEnded = false;
 
     void Start()
     {
+        foreach (var player in redTeamStartingPlayers)
+        {
+            if (player != null)
+            {
+            redTeamGroup.RegisterAgent(player.GetComponent<Agent>());
+            }
+        }
+
+        foreach (var player in blueTeamStartingPlayers)
+        {
+            if (player != null)
+            {
+            blueTeamGroup.RegisterAgent(player.GetComponent<Agent>());
+            }
+        }
+
         ResetPlayers();
         //SpawnPlayers();
         // Initially hide the win text
@@ -49,6 +72,20 @@ public class GameManager : MonoBehaviour
 
     void ResetPlayers()
     {
+        // Randomly decide which team starts first
+
+        if (Random.value < 0.5f)
+        {
+            ResetPlayersRedFirst();
+        }
+        else
+        {
+            ResetPlayersBlueFirst();
+        }
+    }
+
+    void ResetPlayersRedFirst()
+    {
         redTeamPlayers.Clear();
         blueTeamPlayers.Clear();
 
@@ -71,6 +108,7 @@ public class GameManager : MonoBehaviour
                 {
                     playerScript.Initialize();
                     playerScript.AssignRedTeam();
+                    playerScript.gameObject.SetActive(true);
                     redTeamPlayers.Add(player);
                 }
             }
@@ -96,6 +134,60 @@ public class GameManager : MonoBehaviour
                     playerScript.Initialize();
                     playerScript.AssignBlueTeam();
                     blueTeamPlayers.Add(player);
+                }
+            }
+        }
+    }
+
+    void ResetPlayersBlueFirst()
+    {
+        redTeamPlayers.Clear();
+        blueTeamPlayers.Clear();
+
+        // Reset blue team players
+        for (int i = 0; i < blueTeamStartingPlayers.Length; i++)
+        {
+            if (blueTeamStartingPlayers[i] != null)
+            {
+                // Get spawn point for this player
+                Transform spawnPoint = spawnPoints[i];
+                GameObject player = blueTeamStartingPlayers[i];
+
+                // Reset position and rotation
+                player.transform.position = spawnPoint.position;
+                player.transform.rotation = Quaternion.Euler(0, 0, -90f);
+
+                // Reset player properties
+                Player playerScript = player.GetComponent<Player>();
+                if (playerScript != null)
+                {
+                    playerScript.Initialize();
+                    playerScript.AssignBlueTeam();
+                    blueTeamPlayers.Add(player);
+                }
+            }
+        }
+
+        // Reset red team players
+        for (int i = 0; i < redTeamStartingPlayers.Length; i++)
+        {
+            if (redTeamStartingPlayers[i] != null)
+            {
+                // Get spawn point for this player
+                Transform spawnPoint = spawnPoints[i + blueTeamStartingPlayers.Length];
+                GameObject player = redTeamStartingPlayers[i];
+                
+                // Reset position and rotation
+                player.transform.position = spawnPoint.position;
+                player.transform.rotation = Quaternion.Euler(0, 0, 90f);
+
+                // Reset player properties
+                Player playerScript = player.GetComponent<Player>();
+                if (playerScript != null)
+                {
+                    playerScript.Initialize();
+                    playerScript.AssignRedTeam();
+                    redTeamPlayers.Add(player);
                 }
             }
         }
@@ -132,21 +224,25 @@ public class GameManager : MonoBehaviour
 
     void CheckWinCondition()
     {
-        // Remove any null references from the player lists (players that have been destroyed)
-        redTeamPlayers.RemoveAll(player => player == null);
-        blueTeamPlayers.RemoveAll(player => player == null);
+        // Remove any inactive players from the player lists
+        redTeamPlayers.RemoveAll(player => !player.activeInHierarchy);
+        blueTeamPlayers.RemoveAll(player => !player.activeInHierarchy);
 
-        // Check if Red Team has no players left
+        // Check if Red Team has no active players left
         if (redTeamPlayers.Count == 0 && blueTeamPlayers.Count > 0)
         {
             DeclareWinner("Blue");
+            blueTeamGroup.AddGroupReward(10f);
+            redTeamGroup.AddGroupReward(-10f);
         }
-        // Check if Blue Team has no players left
+        // Check if Blue Team has no active players left
         else if (blueTeamPlayers.Count == 0 && redTeamPlayers.Count > 0)
         {
             DeclareWinner("Red");
+            redTeamGroup.AddGroupReward(10f);
+            blueTeamGroup.AddGroupReward(-10f);
         }
-        // Optional: Handle tie if both teams have no players
+        // Optional: Handle tie if both teams have no active players
         else if (redTeamPlayers.Count == 0 && blueTeamPlayers.Count == 0)
         {
             DeclareWinner("No one");
@@ -168,16 +264,6 @@ public class GameManager : MonoBehaviour
             else
             {
                 winText.text = $"{winningTeam} Team Won!";
-            }
-            // Reward players on the winning team
-            List<GameObject> winningTeamPlayers = winningTeam == "Red" ? redTeamPlayers : blueTeamPlayers;
-            foreach (GameObject player in winningTeamPlayers)
-            {
-                Player playerScript = player.GetComponent<Player>();
-                if (playerScript != null)
-                {
-                    playerScript.AddReward(10f);
-                }
             }
         }
         else

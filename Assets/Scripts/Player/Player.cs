@@ -129,59 +129,63 @@ public abstract class Player : Agent
             Color rayColor = hit.collider != null ? Color.red : Color.green;
             Debug.DrawRay(transform.position, direction * rayDistance, rayColor);
             
-            // Add normalized distance (1.0 if no hit, less than 1.0 if hit something)
-            float normalizedDistance = hit.collider != null ? hit.distance / rayDistance : 1.0f;
-            sensor.AddObservation(normalizedDistance);
-            
             // If we hit an enemy, add their health and direction
             if (hit.collider != null)
             {
                 LogToFile($"{gameObject.name} sees {hit.collider.gameObject.layer}");
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Walls"))
                 {
-                    LogToFile($"{gameObject.name} sees a wall at distance {hit.distance}");
-                    Vector2 directionToWall = (hit.collider.transform.position - transform.position).normalized;
-                    sensor.AddObservation(directionToWall);
-                    sensor.AddObservation(1.0f); // wall
+                    sensor.AddObservation((Vector2)hit.collider.transform.position); // location
+                    sensor.AddObservation(new Vector3(1.0f, 0.0f, 0.0f)); // wall
                 }
                 else
                 {
                     Player enemyPlayer = hit.collider.GetComponent<Player>();
                     if (enemyPlayer != null)
                     {
-                        //sensor.AddObservation(enemyPlayer.currentHealth / (float)enemyPlayer.maxHealth);
-                        // Add normalized direction to enemy
-                        Vector2 directionToEnemy = (hit.collider.transform.position - transform.position).normalized;
-                        sensor.AddObservation(directionToEnemy);
-                        LogToFile($"{gameObject.name} sees an enemy at distance {hit.distance}");
-                        sensor.AddObservation(-1.0f); // enemy
+                        sensor.AddObservation((Vector2)hit.collider.transform.position); // location
+                        sensor.AddObservation(new Vector3(0.0f, 0.0f, 1.0f)); // enemy
                     }
                     else
                     {
-                        LogToFile($"{gameObject.name} sees a non-player object at distance {hit.distance}");
-                        // No enemy component found
-                        sensor.AddObservation(Vector2.zero); // direction
-                        sensor.AddObservation(0f); // not an enemy
+                        sensor.AddObservation(Vector2.zero); // location
+                        sensor.AddObservation(new Vector3(0.0f, 1.0f, 0.0f)); // nothing
                     }
                 }
             }
             else
             {
-                // No hit
-                sensor.AddObservation(0f); // health
-                sensor.AddObservation(Vector2.zero); // direction
+                // no hit
+                sensor.AddObservation(Vector2.zero); // location
+                sensor.AddObservation(new Vector3(0.0f, 1.0f, 0.0f)); // nothing
             }
         }
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        // Get continuous actions
-        float moveInput = Mathf.Exp(actions.ContinuousActions[0]);
-        float turnInput = actions.ContinuousActions[1];
-        
+        // Get discrete actions
+        int moveAction = actions.DiscreteActions[0];
+        int turnAction = actions.DiscreteActions[1];
+
         // Handle movement
-        float rotationAmount = -turnInput * rotationSpeed * Time.fixedDeltaTime;
+        float moveInput = 0f;
+        if (moveAction == 1)
+        {
+            moveInput = 1f; // Move forward
+        }
+
+        // Handle turning
+        float rotationAmount = 0f;
+        if (turnAction == 1)
+        {
+            rotationAmount = rotationSpeed * Time.fixedDeltaTime; // Turn right
+        }
+        else if (turnAction == 2)
+        {
+            rotationAmount = -rotationSpeed * Time.fixedDeltaTime; // Turn left
+        }
+
         rb.MoveRotation(rb.rotation + rotationAmount);
 
         Vector2 direction = transform.up;
@@ -189,10 +193,9 @@ public abstract class Player : Agent
         rb.MovePosition(newPosition);
 
         // Handle shooting (discrete action)
-        if (actions.DiscreteActions[0] == 1 && shootTimer <= 0f)
+        if (actions.DiscreteActions[2] == 1 && shootTimer <= 0f)
         {
             FireBullet();
-            // AddReward(-0.01f); // Small negative reward for shooting
         }
 
         // Update shooting timer
@@ -259,7 +262,11 @@ public abstract class Player : Agent
         currentHealth = Mathf.Max(currentHealth, 0);
 
         // Add negative reward for taking damage
-        AddReward(-0.2f);
+        AddReward(-0.5f);
+        if (shooter == null)
+        {
+            AddReward(-0.1f); //Storm
+        }
 
         OnHealthChanged?.Invoke();
 
@@ -300,8 +307,7 @@ public abstract class Player : Agent
         OnDeath?.Invoke();
         EndEpisode();
         
-        // Optional: Instead of destroying, could reset position and health
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 
     // Method to Fire a Bullet
