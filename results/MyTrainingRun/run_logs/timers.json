@@ -1,0 +1,47 @@
+{
+    "name": "root",
+    "metadata": {
+        "timer_format_version": "0.1.0",
+        "start_time_seconds": "1733020954",
+        "python_version": "3.9.6 (tags/v3.9.6:db3ff76, Jun 28 2021, 15:26:21) [MSC v.1929 64 bit (AMD64)]",
+        "command_line_arguments": "C:\\Users\\Elia\\OneDrive\\Dokumente\\Grad\\ai-tanks\\Builds\\.venv\\Scripts\\mlagents-learn C:\\Users\\Elia\\OneDrive\\Dokumente\\Grad\\ai-tanks\\Assets\\ML-Agents\\config.yaml --run-id=MyTrainingRun --env=My Project.exe --width=1920 --height=1080 --force --time-scale=5",
+        "mlagents_version": "0.30.0",
+        "mlagents_envs_version": "0.30.0",
+        "communication_protocol_version": "1.5.0",
+        "pytorch_version": "2.5.1+cu118",
+        "numpy_version": "1.21.2",
+        "end_time_seconds": "1733020957"
+    },
+    "total": 2.9729967,
+    "count": 1,
+    "self": 0.01422049999999997,
+    "children": {
+        "run_training.setup": {
+            "total": 0.13602530000000002,
+            "count": 1,
+            "self": 0.13602530000000002
+        },
+        "TrainerController.start_learning": {
+            "total": 2.8227509,
+            "count": 1,
+            "self": 0.00038689999999963476,
+            "children": {
+                "TrainerController._reset_env": {
+                    "total": 2.8223499,
+                    "count": 1,
+                    "self": 2.8223499
+                },
+                "trainer_threads": {
+                    "total": 8.000000004670937e-07,
+                    "count": 1,
+                    "self": 8.000000004670937e-07
+                },
+                "TrainerController._save_models": {
+                    "total": 1.3299999999993872e-05,
+                    "count": 1,
+                    "self": 1.3299999999993872e-05
+                }
+            }
+        }
+    }
+}

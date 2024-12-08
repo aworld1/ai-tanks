@@ -1696,6 +1696,7 @@ namespace UnityEngine.Rendering.Universal
             bool resolveToDebugScreen = debugHandler != null && debugHandler.WriteToDebugScreenTexture(cameraData.resolveFinalTarget);
             debugHandler?.UpdateShaderGlobalPropertiesForFinalValidationPass(renderGraph, cameraData, !m_HasFinalPass && !resolveToDebugScreen);
 
+            settings.resolveToDebugScreen = resolveToDebugScreen;
             settings.isAlphaOutputEnabled = cameraData.isAlphaOutputEnabled;
             settings.isFxaaEnabled = (cameraData.antialiasing == AntialiasingMode.FastApproximateAntialiasing);
             settings.isFsrEnabled = ((cameraData.imageScalingMode == ImageScalingMode.Upscaling) && (cameraData.upscalingFilter == ImageUpscalingFilter.FSR));
@@ -1995,12 +1996,15 @@ namespace UnityEngine.Rendering.Universal
             // disable useTemporalAA if another feature is disabled) then we need to put it in CameraData::IsTemporalAAEnabled() as opposed
             // to tweaking the value here.
             bool useTemporalAA = cameraData.IsTemporalAAEnabled();
-            if (cameraData.antialiasing == AntialiasingMode.TemporalAntiAliasing && !useTemporalAA)
-                TemporalAA.ValidateAndWarn(cameraData);
 
-            // STP is only supported when TAA is enabled and all of its runtime requirements are met.
-            // See the comments for IsSTPEnabled() for more information.
-            bool useSTP = useTemporalAA && cameraData.IsSTPEnabled();
+            // STP is only enabled when TAA is enabled and all of its runtime requirements are met.
+            // Using IsSTPRequested() vs IsSTPEnabled() for perf reason here, as we already know TAA status
+            bool isSTPRequested = cameraData.IsSTPRequested();
+            bool useSTP = useTemporalAA && isSTPRequested;
+
+            // Warn users if TAA and STP are disabled despite being requested
+            if (!useTemporalAA && cameraData.IsTemporalAARequested())
+                TemporalAA.ValidateAndWarn(cameraData, isSTPRequested);
 
             using (var builder = renderGraph.AddRasterRenderPass<PostFXSetupPassData>("Setup PostFX passes", out var passData,
                 ProfilingSampler.Get(URPProfileId.RG_SetupPostFX)))

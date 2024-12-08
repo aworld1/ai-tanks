@@ -1545,7 +1545,12 @@ namespace UnityEditor.Tilemaps
             if (m_DelayedResetPaletteInstance)
             {
                 m_DelayedResetPaletteInstance = false;
+                var originalSwizzleView = m_CameraSwizzleView;
                 ResetPreviewInstance();
+                if (palette != null && originalSwizzleView != m_CameraSwizzleView)
+                {
+                    ResetPreviewCamera();
+                }
             }
 
             if (paletteInstance == null)
