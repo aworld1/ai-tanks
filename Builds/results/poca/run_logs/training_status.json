@@ -1,0 +1,395 @@
+{
+    "short_poca": {
+        "elo": 632.7326115596875,
+        "checkpoints": [
+            {
+                "steps": 2944,
+                "file_path": "results\\poca\\short_poca\\short_poca-2944.onnx",
+                "reward": null,
+                "creation_time": 1733714205.7487035,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-2944.pt"
+                ]
+            },
+            {
+                "steps": 5959,
+                "file_path": "results\\poca\\short_poca\\short_poca-5959.onnx",
+                "reward": null,
+                "creation_time": 1733714287.9220238,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-5959.pt"
+                ]
+            },
+            {
+                "steps": 5959,
+                "file_path": "results\\poca\\short_poca\\short_poca-5959.onnx",
+                "reward": null,
+                "creation_time": 1733714309.2221284,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-5959.pt"
+                ]
+            },
+            {
+                "steps": 336510,
+                "file_path": "results\\poca\\short_poca\\short_poca-336510.onnx",
+                "reward": -26.80000114440918,
+                "creation_time": 1733719155.61159,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-336510.pt"
+                ]
+            },
+            {
+                "steps": 577427,
+                "file_path": "results\\poca\\short_poca\\short_poca-577427.onnx",
+                "reward": null,
+                "creation_time": 1733722542.123428,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-577427.pt"
+                ]
+            },
+            {
+                "steps": 584985,
+                "file_path": "results\\poca\\short_poca\\short_poca-584985.onnx",
+                "reward": null,
+                "creation_time": 1733722758.9764104,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-584985.pt"
+                ]
+            },
+            {
+                "steps": 1999960,
+                "file_path": "results\\poca\\short_poca\\short_poca-1999960.onnx",
+                "reward": null,
+                "creation_time": 1733755894.8535028,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-1999960.pt"
+                ]
+            },
+            {
+                "steps": 2090482,
+                "file_path": "results\\poca\\short_poca\\short_poca-2090482.onnx",
+                "reward": null,
+                "creation_time": 1733757629.561178,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-2090482.pt"
+                ]
+            },
+            {
+                "steps": 2118231,
+                "file_path": "results\\poca\\short_poca\\short_poca-2118231.onnx",
+                "reward": null,
+                "creation_time": 1733758324.0468524,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-2118231.pt"
+                ]
+            },
+            {
+                "steps": 3017855,
+                "file_path": "results\\poca\\short_poca\\short_poca-3017855.onnx",
+                "reward": null,
+                "creation_time": 1733777406.4309635,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-3017855.pt"
+                ]
+            },
+            {
+                "steps": 3018941,
+                "file_path": "results\\poca\\short_poca\\short_poca-3018941.onnx",
+                "reward": null,
+                "creation_time": 1733795792.6512082,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-3018941.pt"
+                ]
+            },
+            {
+                "steps": 3026382,
+                "file_path": "results\\poca\\short_poca\\short_poca-3026382.onnx",
+                "reward": null,
+                "creation_time": 1733796004.8831587,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-3026382.pt"
+                ]
+            },
+            {
+                "steps": 3999986,
+                "file_path": "results\\poca\\short_poca\\short_poca-3999986.onnx",
+                "reward": -9.699999809265137,
+                "creation_time": 1733827506.368441,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-3999986.pt"
+                ]
+            },
+            {
+                "steps": 5521892,
+                "file_path": "results\\poca\\short_poca\\short_poca-5521892.onnx",
+                "reward": null,
+                "creation_time": 1733847783.3913505,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-5521892.pt"
+                ]
+            },
+            {
+                "steps": 5523018,
+                "file_path": "results\\poca\\short_poca\\short_poca-5523018.onnx",
+                "reward": -26.200000762939453,
+                "creation_time": 1733847888.7238476,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-5523018.pt"
+                ]
+            },
+            {
+                "steps": 5855754,
+                "file_path": "results\\poca\\short_poca\\short_poca-5855754.onnx",
+                "reward": null,
+                "creation_time": 1733859359.9086862,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-5855754.pt"
+                ]
+            },
+            {
+                "steps": 5870447,
+                "file_path": "results\\poca\\short_poca\\short_poca-5870447.onnx",
+                "reward": null,
+                "creation_time": 1733860012.5996578,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-5870447.pt"
+                ]
+            },
+            {
+                "steps": 5999785,
+                "file_path": "results\\poca\\short_poca\\short_poca-5999785.onnx",
+                "reward": null,
+                "creation_time": 1733861925.5828962,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-5999785.pt"
+                ]
+            },
+            {
+                "steps": 7754431,
+                "file_path": "results\\poca\\short_poca\\short_poca-7754431.onnx",
+                "reward": null,
+                "creation_time": 1733892563.7015512,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-7754431.pt"
+                ]
+            },
+            {
+                "steps": 7755324,
+                "file_path": "results\\poca\\short_poca\\short_poca-7755324.onnx",
+                "reward": null,
+                "creation_time": 1733892613.1233807,
+                "auxillary_file_paths": [
+                    "results\\poca\\short_poca\\short_poca-7755324.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 7755324,
+            "file_path": "results\\poca\\short_poca.onnx",
+            "reward": null,
+            "creation_time": 1733892613.1233807,
+            "auxillary_file_paths": [
+                "results\\poca\\short_poca\\short_poca-7755324.pt"
+            ]
+        }
+    },
+    "long_poca": {
+        "elo": 763.0378552112521,
+        "checkpoints": [
+            {
+                "steps": 2949,
+                "file_path": "results\\poca\\long_poca\\long_poca-2949.onnx",
+                "reward": null,
+                "creation_time": 1733714205.8359604,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-2949.pt"
+                ]
+            },
+            {
+                "steps": 5738,
+                "file_path": "results\\poca\\long_poca\\long_poca-5738.onnx",
+                "reward": null,
+                "creation_time": 1733714288.0387707,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-5738.pt"
+                ]
+            },
+            {
+                "steps": 5738,
+                "file_path": "results\\poca\\long_poca\\long_poca-5738.onnx",
+                "reward": null,
+                "creation_time": 1733714309.3307917,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-5738.pt"
+                ]
+            },
+            {
+                "steps": 306517,
+                "file_path": "results\\poca\\long_poca\\long_poca-306517.onnx",
+                "reward": -18.399999618530273,
+                "creation_time": 1733719155.7218146,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-306517.pt"
+                ]
+            },
+            {
+                "steps": 521124,
+                "file_path": "results\\poca\\long_poca\\long_poca-521124.onnx",
+                "reward": -8.800000190734863,
+                "creation_time": 1733722542.251512,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-521124.pt"
+                ]
+            },
+            {
+                "steps": 528044,
+                "file_path": "results\\poca\\long_poca\\long_poca-528044.onnx",
+                "reward": null,
+                "creation_time": 1733722758.8618865,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-528044.pt"
+                ]
+            },
+            {
+                "steps": 1854935,
+                "file_path": "results\\poca\\long_poca\\long_poca-1854935.onnx",
+                "reward": -7.5,
+                "creation_time": 1733757629.4253714,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-1854935.pt"
+                ]
+            },
+            {
+                "steps": 1879175,
+                "file_path": "results\\poca\\long_poca\\long_poca-1879175.onnx",
+                "reward": -11.25,
+                "creation_time": 1733758323.9433844,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-1879175.pt"
+                ]
+            },
+            {
+                "steps": 1999855,
+                "file_path": "results\\poca\\long_poca\\long_poca-1999855.onnx",
+                "reward": null,
+                "creation_time": 1733761140.8282049,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-1999855.pt"
+                ]
+            },
+            {
+                "steps": 2686052,
+                "file_path": "results\\poca\\long_poca\\long_poca-2686052.onnx",
+                "reward": null,
+                "creation_time": 1733777406.3486173,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-2686052.pt"
+                ]
+            },
+            {
+                "steps": 2686877,
+                "file_path": "results\\poca\\long_poca\\long_poca-2686877.onnx",
+                "reward": null,
+                "creation_time": 1733795792.7501173,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-2686877.pt"
+                ]
+            },
+            {
+                "steps": 2694635,
+                "file_path": "results\\poca\\long_poca\\long_poca-2694635.onnx",
+                "reward": null,
+                "creation_time": 1733796004.9883206,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-2694635.pt"
+                ]
+            },
+            {
+                "steps": 3999837,
+                "file_path": "results\\poca\\long_poca\\long_poca-3999837.onnx",
+                "reward": -11.700000762939453,
+                "creation_time": 1733833941.9746962,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-3999837.pt"
+                ]
+            },
+            {
+                "steps": 4921235,
+                "file_path": "results\\poca\\long_poca\\long_poca-4921235.onnx",
+                "reward": null,
+                "creation_time": 1733847783.4819782,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-4921235.pt"
+                ]
+            },
+            {
+                "steps": 4922743,
+                "file_path": "results\\poca\\long_poca\\long_poca-4922743.onnx",
+                "reward": -3.0999999046325684,
+                "creation_time": 1733847888.8182518,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-4922743.pt"
+                ]
+            },
+            {
+                "steps": 5221378,
+                "file_path": "results\\poca\\long_poca\\long_poca-5221378.onnx",
+                "reward": -10.600000381469727,
+                "creation_time": 1733859360.0199792,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-5221378.pt"
+                ]
+            },
+            {
+                "steps": 5234623,
+                "file_path": "results\\poca\\long_poca\\long_poca-5234623.onnx",
+                "reward": null,
+                "creation_time": 1733860012.51629,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-5234623.pt"
+                ]
+            },
+            {
+                "steps": 5999987,
+                "file_path": "results\\poca\\long_poca\\long_poca-5999987.onnx",
+                "reward": null,
+                "creation_time": 1733872388.1490545,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-5999987.pt"
+                ]
+            },
+            {
+                "steps": 6912638,
+                "file_path": "results\\poca\\long_poca\\long_poca-6912638.onnx",
+                "reward": null,
+                "creation_time": 1733892563.6034663,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-6912638.pt"
+                ]
+            },
+            {
+                "steps": 6913798,
+                "file_path": "results\\poca\\long_poca\\long_poca-6913798.onnx",
+                "reward": null,
+                "creation_time": 1733892613.0212543,
+                "auxillary_file_paths": [
+                    "results\\poca\\long_poca\\long_poca-6913798.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 6913798,
+            "file_path": "results\\poca\\long_poca.onnx",
+            "reward": null,
+            "creation_time": 1733892613.0212543,
+            "auxillary_file_paths": [
+                "results\\poca\\long_poca\\long_poca-6913798.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "2.5.1+cu118"
+    }
+}
